@@ -1,3 +1,4 @@
+from typing import List
 from flet import (
     OutlinedButton, 
     InputBorder,
@@ -12,17 +13,33 @@ from flet import (
     MainAxisAlignment,
     CrossAxisAlignment,
     ControlEvent,
-    colors)
+    colors,
+    DataTable,
+    DataRow,
+    DataCell,
+    DataColumn,
+    BorderSide,
+    Animation
+    )
+from flet_core.control import Control
+from flet_core.ref import Ref
+from flet_core.types import ClipBehavior
 from player import Player
 from player_results import Player_results
-from config import START_PAGE_FONT
+from config import START_PAGE_FONT, START_WINDOW_STATISTICK_FONT_SIZE
+import time
 
 
 class Start_Window(UserControl):
-    def build(self):
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__( *args, **kwargs)
         self.player = Player()
         self.player_results = Player_results()
-        self.start_btn = TextButton(content=Text("Войти", size=START_PAGE_FONT, color=colors.WHITE60),disabled=True, on_click=self.start_game)
+        time.sleep(1) # Для прогрузки данных из файла
+        
+    def build(self):
+        self.start_btn = TextButton(content=Text("Войти", size=START_PAGE_FONT, color=colors.WHITE12),disabled=True, on_click=self.start_game)
         
         prefix_text = Text(' Ваше имя: ', size=START_PAGE_FONT, color=colors.WHITE60)
         self.nickname_field = Text('', size=START_PAGE_FONT, color=colors.WHITE60)
@@ -32,19 +49,42 @@ class Start_Window(UserControl):
             controls=[
                 prefix_text, self.nickname_field
             ],
-            height=50
+            height=40
         )
         nickname_content = Column(
             controls=[
                 nickname_row,
                 self.error_text
-                
             ]
+        )
+        
+        # Статистика топ 10 пользователей
+        self.all_user_result = DataTable(
+                columns=[
+                DataColumn(Text("Место", size=START_WINDOW_STATISTICK_FONT_SIZE, color=colors.WHITE60)),
+                DataColumn(Text("Имя", size=START_WINDOW_STATISTICK_FONT_SIZE, color=colors.WHITE60)),
+                DataColumn(Text("Рез-т", size=START_WINDOW_STATISTICK_FONT_SIZE, color=colors.WHITE60)),
+            ],
+                horizontal_lines=BorderSide(1, colors.WHITE60),
+                rows=self.get_all_user_statistic(),
+                # rows=[],
+                column_spacing=10,
+                data_row_max_height=START_WINDOW_STATISTICK_FONT_SIZE*2,
+                width=300,
+                horizontal_margin=5
+        )
+        
+        statistick_row = Row(
+            controls=[
+                Row([self.start_btn], alignment=MainAxisAlignment.SPACE_AROUND, expand=True),
+                self.all_user_result
+            ],
+            alignment=MainAxisAlignment.SPACE_BETWEEN
         )
         
         content = Column(
             expand=True,
-            controls=[nickname_content, self.start_btn, self.get_btn_keyboard_row('йцукенгшщзхъ', 'ёфывапролджэ', 'ячсмитьбю')],
+            controls=[nickname_content, statistick_row, self.get_btn_keyboard_row('йцукенгшщзхъ', 'ёфывапролджэ', 'ячсмитьбю')],
             alignment=MainAxisAlignment.SPACE_AROUND,
             horizontal_alignment=CrossAxisAlignment.CENTER
         )
@@ -55,17 +95,21 @@ class Start_Window(UserControl):
         if len(self.nickname_field.value) == 0:
             self.error_text.value = "\t\t\tИмя не может быть пустым"
             self.start_btn.disabled = True
+            self.start_btn.content.color = colors.WHITE12
             
         elif len(self.nickname_field.value) > 12:
             self.error_text.value = "\t\t\tСлишком длинное имя"
             self.start_btn.disabled = True
+            self.start_btn.content.color = colors.WHITE12
             
         elif self.player_results.check_unic_nickname(self.nickname_field.value):
             self.start_btn.disabled = False
+            self.start_btn.content.color = colors.WHITE60
             self.error_text.value = ''
             
         else:
             self.start_btn.disabled = True
+            self.start_btn.content.color = colors.WHITE12
             self.error_text.value = "\t\t\tТакой ник уже есть"
         self.update()
         
@@ -109,3 +153,20 @@ class Start_Window(UserControl):
             alignment=MainAxisAlignment.END,
             horizontal_alignment=CrossAxisAlignment.END
             )
+        
+    
+    def get_all_user_statistic(self):
+        table_rows = []
+        results = self.player_results.get_top_user_statistic(10)
+        if len(results) == 0:
+            return []
+        for row in results:
+            table_rows.append(
+                DataRow(
+                cells =[
+                    DataCell(Text(row[0], size=START_WINDOW_STATISTICK_FONT_SIZE, color=colors.WHITE60)),
+                    DataCell(Text(row[1], size=START_WINDOW_STATISTICK_FONT_SIZE, color=colors.WHITE60)),
+                    DataCell(Text(row[2], size=START_WINDOW_STATISTICK_FONT_SIZE, color=colors.WHITE60))
+                ]
+            ))
+        return table_rows

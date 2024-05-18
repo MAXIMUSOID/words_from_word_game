@@ -11,8 +11,7 @@ def main(game_page: Page):
     print(game_page.width)
     game_page.title = "Слова из Слова"
     game_page.padding = 0
-    Player_results().init(RESULT_FILE_NAME)
-    Player()
+    
     
     
     
@@ -22,29 +21,33 @@ def main(game_page: Page):
         "School_Board":"/font/Chalkduster.ttf",
         "Open Sans": "fonts/OpenSans-Regular.ttf",
     }
+    
+
 
     game_page.theme = Theme(font_family="School_Board")
     game_page.window_full_screen=True
-    
+    start_window = Start_Window()
+    game_field = Game_Field()
+    page_content = Container(
+                expand=True,
+                image_src="fone/main_bg.png",
+                image_fit=ImageFit.FILL,
+                height=game_page.height,
+                padding=padding.only(top=2, left=20, right=20, bottom=2),
+                margin=0
+            )
 
 
     
     
     
     def route_change(route):
-        page_content = Container(
-                        expand=True,
-                        image_src="fone/main_bg.png",
-                        image_fit=ImageFit.FILL,
-                        height=game_page.height,
-                        padding=padding.only(top=2, left=20, right=20, bottom=5),
-                        margin=0
-                    )
+
         
         
         
         if game_page.route == "/start_window":
-            start_window = Start_Window()
+            
             page_content.content = start_window
             game_page.views.clear()
             game_page.views.append(
@@ -58,7 +61,7 @@ def main(game_page: Page):
                 )
             )
         if game_page.route == "/game_field":
-            game_field = Game_Field()
+            
             page_content.content = game_field
             game_page.views.clear()
             game_page.views.append(
@@ -87,4 +90,6 @@ def main(game_page: Page):
 
 
 if __name__ == "__main__":
+    Player_results().init(RESULT_FILE_NAME)
+    Player()
     app(target=main, assets_dir="assets")

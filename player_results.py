@@ -61,6 +61,20 @@ class Player_results():
             statistic.append(tuple([player_position, player.nickname, self.results[player.nickname]])) 
             
         return statistic
+    
+    
+    def get_top_user_statistic(self, top_num)->list:
+        statistic = []
+
+        if len(self.results.keys()) == 0:
+            return []
+        
+        number = top_num if len(self.results.keys()) > top_num else len(self.results.keys())
+        num = 1
+        for key in list(self.results.keys())[:number]:
+            statistic.append(tuple([num, key, self.results[key]])) 
+            num+=1
+        return statistic
         
         
     def check_unic_nickname(self, nickname):
