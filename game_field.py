@@ -1,4 +1,22 @@
-from flet import UserControl, TextButton, Text, Column, Container, Row, MainAxisAlignment, colors, DataTable, DataColumn, DataCell, DataRow, BorderSide, padding, TextAlign
+from flet import (
+    UserControl, 
+    TextButton, 
+    Text, 
+    Column, 
+    Container, 
+    Row,
+    MainAxisAlignment,
+    colors,
+    DataTable,
+    DataColumn,
+    DataCell,
+    DataRow,
+    BorderSide,
+    padding,
+    TextAlign,
+    AlertDialog
+    )
+
 from char_btn import Word_buttons_Row
 from word_check import WordCheck
 import config
@@ -9,6 +27,20 @@ from player import Player
 
 class Game_Field(UserControl):
     def build(self):
+        
+        self.start_banner = AlertDialog(
+        modal=True,
+        bgcolor=colors.TRANSPARENT,
+        title=Text("Привет!!!"),
+        content=Text("Составь как можно больше слов за отведённое время"),
+        actions=[
+            Row([TextButton("Начать", on_click=self.start_game)], alignment=MainAxisAlignment.CENTER),
+        ],
+        actions_alignment=MainAxisAlignment.END,
+        on_dismiss=lambda e: print("Modal dialog dismissed!"),
+    )
+        self.page.dialog = self.start_banner
+        self.start_banner.open = True
         
         self.timer = Timer(config.TIMER_VALUE, self.timer_change, self.end_session_timer)
         
@@ -36,7 +68,7 @@ class Game_Field(UserControl):
         self.reset_word_btn = TextButton(content=Text('Сброс', size=font_size, color=colors.RED_500), disabled=True, on_click=self.reset)
         
         self.timer_text = Text(value=self.timer.get_time(), size=config.GAME_FIELD_FONT_SIZE)
-        self.start_session_btn = TextButton(content=Text('Начать', size=font_size), on_click=self.start_count)
+        self.start_session_btn = TextButton(content=Text('Начать', size=font_size), on_click=self.start_game)
         self.end_session_btn = TextButton(content=Text('Закончить', size=font_size), on_click=self.end_session, visible=False)
         header_row = Row([self.timer_text, Row([self.start_session_btn, self.end_session_btn], alignment=MainAxisAlignment.END)], alignment=MainAxisAlignment.CENTER)
         
@@ -86,16 +118,20 @@ class Game_Field(UserControl):
         return content
     def timer_change(self):
         self.timer_text.value = self.timer.get_time()
+        if self.timer.time <= 30:
+            self.timer_text.color = colors.RED_400
         self.update()
     
-    def start_count(self, e):
+    def start_game(self, e):
+        self.start_banner.open = False
         self.word_button_row.restart()
         self.check_word_btn.disabled = False
         self.reset_word_btn.disabled = False
         self.start_session_btn.visible = False
         self.end_session_btn.visible = True
+        self.page.update()
         self.timer.start()
-        self.update()
+        
     
     def end_session_timer(self):
         self.timer.stop()

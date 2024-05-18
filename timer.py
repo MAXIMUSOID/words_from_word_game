@@ -7,6 +7,7 @@ class Timer():
         self.on_change = on_change
         self.end_count = end_count
         self.time = time_start
+        self.count_accept = False
         pass
     
     async def __timer__(self):
@@ -20,6 +21,8 @@ class Timer():
             self.end_count()
             
     def start(self):
+        if self.count_accept:
+            return
         self.count_accept = True
         asyncio.run(self.start_count())
         
